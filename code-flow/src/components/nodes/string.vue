@@ -32,7 +32,7 @@ export default defineComponent({
       nodeId.value = el.value.parentElement.parentElement.id.slice(5);
       dataNode.value = df.getNodeFromId(nodeId.value);
 
-      value.value = dataNode.value.data.value;
+      value.value = '';
     });
 
     return {

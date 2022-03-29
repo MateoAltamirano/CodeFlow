@@ -88,7 +88,7 @@ export default {
         item: 'String',
         input: 0,
         output: 1,
-        defaultData: { value: '' },
+        defaultData: { value: '""' },
       },
       {
         name: 'Boolean',
