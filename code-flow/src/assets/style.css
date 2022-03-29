@@ -51,7 +51,7 @@
 }
 
 .drawflow .drawflow-node .drawflow_content_node input,
-.drawflow .drawflow-node .drawflow_content_node .el-select,
+.drawflow .drawflow-node .drawflow_content_node,
 .drawflow .drawflow-node .drawflow_content_node button {
   width: 100%;
 }

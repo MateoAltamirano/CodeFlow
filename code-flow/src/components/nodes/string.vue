@@ -1,7 +1,7 @@
 <template>
   <div ref="el" class="assign">
-    <h4>Assign</h4>
-    <el-input v-model="variable" @change="updateSelect" size="small" />
+    <h4>String</h4>
+    <el-input v-model="value" @change="updateSelect" size="small" />
   </div>
 </template>
 
@@ -18,12 +18,12 @@ export default defineComponent({
     const el = ref(null);
     const nodeId = ref(0);
     let df = null;
-    const variable = ref(null);
+    const value = ref(null);
     const dataNode = ref({});
 
     df = getCurrentInstance().appContext.config.globalProperties.$df.value;
     const updateSelect = (value) => {
-      dataNode.value.data.variable = value;
+      dataNode.value.data.value = `"${value}"`;
       df.updateNodeDataFromId(nodeId.value, dataNode.value.data);
     };
 
@@ -32,12 +32,12 @@ export default defineComponent({
       nodeId.value = el.value.parentElement.parentElement.id.slice(5);
       dataNode.value = df.getNodeFromId(nodeId.value);
 
-      variable.value = dataNode.value.data.variable;
+      value.value = dataNode.value.data.value;
     });
 
     return {
       el,
-      variable,
+      value,
       updateSelect,
     };
   },
@@ -46,7 +46,7 @@ export default defineComponent({
 <style scoped>
 .assign {
   border-radius: 1rem;
-  background-color: #f15300;
+  background-color: #00cd6a;
   padding: 1rem;
 }
 </style>

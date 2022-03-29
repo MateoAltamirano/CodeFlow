@@ -1,7 +1,21 @@
 <template>
   <div ref="el" class="assign">
-    <h4>Assign</h4>
-    <el-input v-model="variable" @change="updateSelect" size="small" />
+    <h4>Boolean</h4>
+    <el-select
+      v-model="value"
+      placeholder="Value"
+      size="small"
+      @change="updateSelect"
+      filterable
+      allow-create
+    >
+      <el-option
+        v-for="item in options"
+        :key="item.value"
+        :label="item.label"
+        :value="item.value"
+      />
+    </el-select>
   </div>
 </template>
 
@@ -18,12 +32,22 @@ export default defineComponent({
     const el = ref(null);
     const nodeId = ref(0);
     let df = null;
-    const variable = ref(null);
+    const value = ref(null);
     const dataNode = ref({});
+    const options = [
+      {
+        value: 'True',
+        label: 'True',
+      },
+      {
+        value: 'False',
+        label: 'False',
+      },
+    ];
 
     df = getCurrentInstance().appContext.config.globalProperties.$df.value;
     const updateSelect = (value) => {
-      dataNode.value.data.variable = value;
+      dataNode.value.data.value = value;
       df.updateNodeDataFromId(nodeId.value, dataNode.value.data);
     };
 
@@ -31,14 +55,14 @@ export default defineComponent({
       await nextTick();
       nodeId.value = el.value.parentElement.parentElement.id.slice(5);
       dataNode.value = df.getNodeFromId(nodeId.value);
-
-      variable.value = dataNode.value.data.variable;
+      value.value = dataNode.value.data.value;
     });
 
     return {
       el,
-      variable,
+      value,
       updateSelect,
+      options,
     };
   },
 });
@@ -46,7 +70,7 @@ export default defineComponent({
 <style scoped>
 .assign {
   border-radius: 1rem;
-  background-color: #f15300;
+  background-color: #00cd6a;
   padding: 1rem;
 }
 </style>

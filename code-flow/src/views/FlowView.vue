@@ -1,6 +1,5 @@
 <template>
   <div class="flow">
-    <el-button type="primary" @click="exportEditor">Export</el-button>
     <el-aside width="250px" class="column">
       <div
         v-for="n in listNodes"
@@ -14,6 +13,7 @@
           {{ n.name }}
         </div>
       </div>
+      <el-button color="#ebf0f1" @click="exportEditor">Generate Code</el-button>
     </el-aside>
     <el-main class="editor">
       <div
@@ -49,18 +49,31 @@ import {
   readonly,
   ref,
 } from 'vue';
-import Node1 from '../components/nodes/node1.vue';
-import Node2 from '../components/nodes/node2.vue';
-import Node3 from '../components/nodes/node3.vue';
+
+import Variable from '../components/nodes/variable.vue';
 import Number from '../components/nodes/number.vue';
-import Add from '../components/nodes/add.vue';
+import String from '../components/nodes/string.vue';
+import Boolean from '../components/nodes/boolean.vue';
+import Operation from '../components/nodes/operation.vue';
 import Assign from '../components/nodes/assign.vue';
+import If from '../components/nodes/if.vue';
+import Else from '../components/nodes/else.vue';
+import For from '../components/nodes/for.vue';
+import Print from '../components/nodes/print.vue';
 import AST from '../models/ast.js';
 
 export default {
   name: 'drawflow',
   setup() {
     const listNodes = readonly([
+      {
+        name: 'Variable',
+        color: '#00a186',
+        item: 'Variable',
+        input: 0,
+        output: 1,
+        defaultData: { value: '' },
+      },
       {
         name: 'Number',
         color: '#00cd6a',
@@ -70,20 +83,92 @@ export default {
         defaultData: { value: 0 },
       },
       {
-        name: 'Add',
+        name: 'String',
+        color: '#00cd6a',
+        item: 'String',
+        input: 0,
+        output: 1,
+        defaultData: { value: '' },
+      },
+      {
+        name: 'Boolean',
+        color: '#00cd6a',
+        item: 'Boolean',
+        input: 0,
+        output: 1,
+        defaultData: { value: 'True' },
+      },
+      {
+        name: 'Addition',
         color: '#ffc500',
-        item: 'Add',
+        item: 'Addition',
         input: 2,
         output: 1,
         defaultData: { operator: '+' },
+      },
+      {
+        name: 'Substraction',
+        color: '#ffc500',
+        item: 'Substraction',
+        input: 2,
+        output: 1,
+        defaultData: { operator: '-' },
+      },
+      {
+        name: 'Multiplication',
+        color: '#ffc500',
+        item: 'Multiplication',
+        input: 2,
+        output: 1,
+        defaultData: { operator: '*' },
+      },
+      {
+        name: 'Division',
+        color: '#ffc500',
+        item: 'Division',
+        input: 2,
+        output: 1,
+        defaultData: { operator: '/' },
       },
       {
         name: 'Assign',
         color: '#f15300',
         item: 'Assign',
         input: 1,
-        output: 0,
+        output: 1,
         defaultData: { operator: '=', variable: 'x' },
+      },
+      {
+        name: 'If',
+        color: '#0099de',
+        item: 'If',
+        input: 3,
+        output: 1,
+        defaultData: { operator: '==' },
+      },
+      {
+        name: 'Else',
+        color: '#0099de',
+        item: 'Else',
+        input: 2,
+        output: 1,
+        defaultData: {},
+      },
+      {
+        name: 'For',
+        color: '#ae59b9',
+        item: 'For',
+        input: 1,
+        output: 1,
+        defaultData: { variable: 'i', start: 0, stop: 10 },
+      },
+      {
+        name: 'Print',
+        color: '#8fa7a6',
+        item: 'Print',
+        input: 1,
+        output: 1,
+        defaultData: {},
       },
     ]);
 
@@ -101,26 +186,15 @@ export default {
       parseData(data);
       dialogVisible.value = true;
     }
+
     function parseData(data) {
-      let startingNodes;
-      startingNodes = Object.values(data).filter(
-        (node) => node.class === 'Assign'
-      );
-      if (startingNodes.length === 0) {
-        startingNodes = Object.values(data).filter(
-          (node) => node.class === 'Add'
-        );
-        if (startingNodes.length === 0) {
-          startingNodes = Object.values(data).filter(
-            (node) => node.class === 'Number'
-          );
-        }
-      }
+      let rootNodes;
+      rootNodes = Object.values(data).filter((node) => isRoot(node));
 
       const expressions = [];
 
-      startingNodes.forEach((node) => {
-        const ast = new AST(node, data);
+      rootNodes.forEach((node) => {
+        const ast = new AST(node, data, 0);
         let expression = [];
         inOrderTraversal(ast, expression);
         expressions.push(expression.join(''));
@@ -132,13 +206,62 @@ export default {
       function inOrderTraversal(ast, expression) {
         if (ast !== null) {
           inOrderTraversal(ast.left, expression);
-          if (ast.value.class === undefined)
-            expression.push(`${ast.value.data.variable} `);
-          else if (ast.value.class === 'Number')
-            expression.push(`${ast.value.data.value} `);
-          else expression.push(`${ast.value.data.operator} `);
+          switch (ast.value.class) {
+            case 'Variable':
+            case 'Number':
+            case 'String':
+            case 'Boolean':
+              expression.push(`${ast.value.data.value} `);
+              break;
+            case 'Assign':
+            case 'Addition':
+            case 'Substraction':
+            case 'Multiplication':
+            case 'Division':
+              expression.push(`${ast.value.data.operator} `);
+              break;
+            case 'If':
+              expression.push(`if ${ast.left.value.data.condition}:\n`);
+              for (let i = 0; i < ast.tabs; i++) {
+                expression.push('\t');
+              }
+              break;
+            case 'Else':
+              expression.push('\n');
+              for (let i = 0; i < ast.tabs - 1; i++) {
+                expression.push('\t');
+              }
+              expression.push('else:\n');
+              for (let i = 0; i < ast.tabs; i++) {
+                expression.push('\t');
+              }
+              break;
+            case 'For':
+              expression.push(`for ${ast.left.value.data.condition}:\n`);
+              for (let i = 0; i < ast.tabs; i++) {
+                expression.push('\t');
+              }
+              break;
+            case 'Print':
+              const value = ast.left ? ast.left.value.data.value : '';
+              expression.push(`print(${value})`);
+              break;
+            case undefined:
+              if (
+                ast.value.data.condition === undefined &&
+                ast.value.data.value === undefined
+              ) {
+                expression.push(`${ast.value.data.variable} `);
+              }
+              break;
+            default:
+          }
           inOrderTraversal(ast.right, expression);
         }
+      }
+
+      function isRoot(node) {
+        return node.outputs.output_1.connections.length === 0;
       }
     }
 
@@ -196,7 +319,6 @@ export default {
         editor.value.precanvas.getBoundingClientRect().y *
           (editor.value.precanvas.clientHeight /
             (editor.value.precanvas.clientHeight * editor.value.zoom));
-
       const nodeSelected = listNodes.find((ele) => ele.item == name);
       editor.value.addNode(
         name,
@@ -226,12 +348,19 @@ export default {
       );
       editor.value.start();
 
-      editor.value.registerNode('Node1', Node1, {}, {});
-      editor.value.registerNode('Node2', Node2, {}, {});
-      editor.value.registerNode('Node3', Node3, {}, {});
+      editor.value.registerNode('Variable', Variable, {}, {});
       editor.value.registerNode('Number', Number, { value: 0 }, {});
-      editor.value.registerNode('Add', Add, {}, {});
+      editor.value.registerNode('String', String, {}, {});
+      editor.value.registerNode('Boolean', Boolean, {}, {});
+      editor.value.registerNode('Addition', Operation, {}, {});
+      editor.value.registerNode('Substraction', Operation, {}, {});
+      editor.value.registerNode('Multiplication', Operation, {}, {});
+      editor.value.registerNode('Division', Operation, {}, {});
       editor.value.registerNode('Assign', Assign, {}, {});
+      editor.value.registerNode('If', If, {}, {});
+      editor.value.registerNode('Else', Else, {}, {});
+      editor.value.registerNode('For', For, {}, {});
+      editor.value.registerNode('Print', Print, {}, {});
       const df = internalInstance.appContext.config.globalProperties.$df.value;
       editor.value.on(
         'connectionCreated',
@@ -269,6 +398,11 @@ export default {
 }
 
 .column {
+  display: flex;
+  flex-direction: column;
+  overflow: auto;
+  background-color: #23475f;
+  padding: 1rem;
 }
 
 .editor {
@@ -283,11 +417,14 @@ export default {
   line-height: 40px;
   padding: 10px;
   cursor: move;
+  margin-bottom: 1rem;
 }
 
 #drawflow {
   width: 100%;
   height: 100%;
   background: #1e3c50;
+  background-size: 2rem 2rem;
+  background-image: radial-gradient(circle, #798d8e 1px, rgba(0, 0, 0, 0) 1px);
 }
 </style>

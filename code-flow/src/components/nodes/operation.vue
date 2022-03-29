@@ -1,7 +1,6 @@
 <template>
-  <div ref="el" class="assign">
-    <h4>Assign</h4>
-    <el-input v-model="variable" @change="updateSelect" size="small" />
+  <div ref="el" class="add">
+    <h4>{{ name }}</h4>
   </div>
 </template>
 
@@ -9,7 +8,10 @@
 import {
   defineComponent,
   onMounted,
+  onBeforeUpdate,
+  onUpdated,
   getCurrentInstance,
+  readonly,
   ref,
   nextTick,
 } from 'vue';
@@ -18,35 +20,30 @@ export default defineComponent({
     const el = ref(null);
     const nodeId = ref(0);
     let df = null;
-    const variable = ref(null);
+    const name = ref(null);
     const dataNode = ref({});
 
     df = getCurrentInstance().appContext.config.globalProperties.$df.value;
-    const updateSelect = (value) => {
-      dataNode.value.data.variable = value;
-      df.updateNodeDataFromId(nodeId.value, dataNode.value.data);
-    };
 
     onMounted(async () => {
       await nextTick();
       nodeId.value = el.value.parentElement.parentElement.id.slice(5);
       dataNode.value = df.getNodeFromId(nodeId.value);
 
-      variable.value = dataNode.value.data.variable;
+      name.value = dataNode.value.name;
     });
 
     return {
       el,
-      variable,
-      updateSelect,
+      name,
     };
   },
 });
 </script>
 <style scoped>
-.assign {
+.add {
   border-radius: 1rem;
-  background-color: #f15300;
+  background-color: #ffc500;
   padding: 1rem;
 }
 </style>

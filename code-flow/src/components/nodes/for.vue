@@ -1,7 +1,19 @@
 <template>
   <div ref="el" class="assign">
-    <h4>Assign</h4>
+    <h4>For</h4>
     <el-input v-model="variable" @change="updateSelect" size="small" />
+    <el-input-number
+      v-model.number="start"
+      @change="updateStart"
+      controls-position="right"
+      size="small"
+    />
+    <el-input-number
+      v-model.number="stop"
+      @change="updateStop"
+      controls-position="right"
+      size="small"
+    />
   </div>
 </template>
 
@@ -19,11 +31,21 @@ export default defineComponent({
     const nodeId = ref(0);
     let df = null;
     const variable = ref(null);
+    const start = ref(null);
+    const stop = ref(null);
     const dataNode = ref({});
 
     df = getCurrentInstance().appContext.config.globalProperties.$df.value;
     const updateSelect = (value) => {
       dataNode.value.data.variable = value;
+      df.updateNodeDataFromId(nodeId.value, dataNode.value.data);
+    };
+    const updateStart = (value) => {
+      dataNode.value.data.start = value;
+      df.updateNodeDataFromId(nodeId.value, dataNode.value.data);
+    };
+    const updateStop = (value) => {
+      dataNode.value.data.stop = value;
       df.updateNodeDataFromId(nodeId.value, dataNode.value.data);
     };
 
@@ -33,12 +55,18 @@ export default defineComponent({
       dataNode.value = df.getNodeFromId(nodeId.value);
 
       variable.value = dataNode.value.data.variable;
+      start.value = dataNode.value.data.start;
+      stop.value = dataNode.value.data.stop;
     });
 
     return {
       el,
       variable,
+      start,
+      stop,
       updateSelect,
+      updateStart,
+      updateStop,
     };
   },
 });
@@ -46,7 +74,7 @@ export default defineComponent({
 <style scoped>
 .assign {
   border-radius: 1rem;
-  background-color: #f15300;
+  background-color: #ae59b9;
   padding: 1rem;
 }
 </style>
