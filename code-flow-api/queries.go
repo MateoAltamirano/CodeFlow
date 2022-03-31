@@ -4,8 +4,9 @@ import "fmt"
 
 const allProgramsQuery string = `
 {
-	programs(func: has(code)) {
+	programs(func: has(flow)) {
 		uid
+		name
 	}
 }
 `
@@ -13,7 +14,9 @@ const programByIdQuery string = `
 {
 	program(func: uid(%s)) {
 	  uid
+	  name
 	  code
+	  flow
 	}
 }
 `

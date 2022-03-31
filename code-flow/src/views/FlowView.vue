@@ -13,7 +13,13 @@
           {{ n.name }}
         </div>
       </div>
-      <el-button color="#ebf0f1" @click="exportEditor">Generate Code</el-button>
+      <el-button
+        color="#ebf0f1"
+        style="color: gray"
+        size="large"
+        @click="generateCode"
+        >Generate Code</el-button
+      >
     </el-aside>
     <el-main class="editor">
       <div
@@ -23,23 +29,13 @@
       ></div>
     </el-main>
   </div>
-  <el-dialog v-model="dialogVisible" title="Export" width="50%">
-    <span>Data:</span>
-    <pre><code>{{dialogData}}</code></pre>
-    <template #footer>
-      <span class="dialog-footer">
-        <el-button @click="dialogVisible = false">Cancel</el-button>
-        <el-button type="primary" @click="dialogVisible = false"
-          >Confirm</el-button
-        >
-      </span>
-    </template>
-  </el-dialog>
 </template>
 <script>
 import Drawflow from 'drawflow';
 import styleDrawflow from 'drawflow/dist/drawflow.min.css';
 import style from '../assets/style.css';
+import { useCodeFlowStore } from '../stores/codeFlow';
+import { onBeforeRouteLeave } from 'vue-router';
 import {
   onMounted,
   shallowRef,
@@ -65,6 +61,7 @@ import AST from '../models/ast.js';
 export default {
   name: 'drawflow',
   setup() {
+    const codeFlowStore = useCodeFlowStore();
     const listNodes = readonly([
       {
         name: 'Variable',
@@ -173,21 +170,18 @@ export default {
     ]);
 
     const editor = shallowRef({});
-    const dialogVisible = ref(false);
-    const dialogData = ref({});
     const Vue = { version: 3, h, render };
     const internalInstance = getCurrentInstance();
     internalInstance.appContext.app._context.config.globalProperties.$df =
       editor;
 
-    function exportEditor() {
-      dialogData.value = editor.value.export();
-      const data = editor.value.export().drawflow.Home.data;
-      parseData(data);
-      dialogVisible.value = true;
+    function generateCode() {
+      const flow = editor.value.export().drawflow.Home.data;
+      const generatedCode = parseFlowToCode(flow);
+      codeFlowStore.updateCode(generatedCode);
     }
 
-    function parseData(data) {
+    function parseFlowToCode(data) {
       let rootNodes;
       rootNodes = Object.values(data).filter((node) => isRoot(node));
 
@@ -198,10 +192,9 @@ export default {
         let expression = [];
         inOrderTraversal(ast, expression);
         expressions.push(expression.join(''));
-        console.log(expression.join(''));
       });
 
-      console.log({ expressions });
+      return expressions.join('\n');
 
       function inOrderTraversal(ast, expression) {
         if (ast !== null) {
@@ -361,32 +354,26 @@ export default {
       editor.value.registerNode('Else', Else, {}, {});
       editor.value.registerNode('For', For, {}, {});
       editor.value.registerNode('Print', Print, {}, {});
-      const df = internalInstance.appContext.config.globalProperties.$df.value;
-      editor.value.on(
-        'connectionCreated',
-        ({ output_id, input_id, output_class, input_class }) => {
-          const inputNode = df.getNodeFromId(output_id);
-          const outputNode = df.getNodeFromId(input_id);
-          if (outputNode.class === 'Add') {
-          }
-        }
-      );
+
       editor.value.import({
         drawflow: {
           Home: {
-            data: {},
+            data: codeFlowStore.flow,
           },
         },
       });
     });
+
+    onBeforeRouteLeave(() => {
+      codeFlowStore.updateFlow(editor.value.export().drawflow.Home.data);
+    });
+
     return {
-      exportEditor,
+      generateCode,
       listNodes,
       drag,
       drop,
       allowDrop,
-      dialogVisible,
-      dialogData,
     };
   },
 };
@@ -407,6 +394,7 @@ export default {
 
 .editor {
   padding: 0;
+  height: 100%;
 }
 
 .node {
@@ -426,5 +414,12 @@ export default {
   background: #1e3c50;
   background-size: 2rem 2rem;
   background-image: radial-gradient(circle, #798d8e 1px, rgba(0, 0, 0, 0) 1px);
+}
+
+.el-button {
+  height: 60px;
+  line-height: 40px;
+  border-radius: 0.5rem;
+  margin-bottom: 0;
 }
 </style>

@@ -14,6 +14,11 @@ const router = createRouter({
       name: 'flow',
       component: () => import('../views/FlowView.vue'),
     },
+    {
+      path: '/code',
+      name: 'code',
+      component: () => import('../views/CodeView.vue'),
+    },
   ],
 });
 

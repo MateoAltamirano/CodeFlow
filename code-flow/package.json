@@ -9,10 +9,12 @@
     "lint": "eslint . --ext .vue,.js,.jsx,.cjs,.mjs --fix --ignore-path .gitignore"
   },
   "dependencies": {
+    "axios": "^0.26.1",
     "drawflow": "^0.0.55",
     "element-plus": "^2.0.4",
     "pinia": "^2.0.11",
     "vue": "^3.2.31",
+    "vue-axios": "^3.4.1",
     "vue-router": "^4.0.12"
   },
   "devDependencies": {

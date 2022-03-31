@@ -4,9 +4,10 @@ import { RouterLink, RouterView } from 'vue-router';
 
 <template>
   <header>
-    <div class="wrapper">
+    <div class="nav-wrapper">
       <nav>
         <RouterLink to="/">Home</RouterLink>
+        <RouterLink to="/code">Code</RouterLink>
         <RouterLink to="/flow">Flow</RouterLink>
       </nav>
     </div>
@@ -27,11 +28,18 @@ import { RouterLink, RouterView } from 'vue-router';
 }
 
 header {
-  line-height: 1.5;
+  line-height: 3rem;
+}
+
+.nav-wrapper {
+  display: flex;
+  justify-content: start;
+  align-items: flex-start;
+  background-color: #ebf0f1;
 }
 
 main {
-  height: 100%;
+  height: calc(100% - 3rem);
 }
 
 a,
@@ -49,7 +57,7 @@ a,
 
 nav {
   width: 100%;
-  font-size: 12px;
+  font-size: 14px;
   text-align: center;
 }
 

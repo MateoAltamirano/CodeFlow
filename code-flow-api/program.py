@@ -1,1 +1,3 @@
-print(10 + 5)
+if True == True:
+	x = "save test" 
+print(x)

@@ -44,13 +44,17 @@ export default class AST {
           node.inputs.input_1.connections.length > 0
             ? data[node.inputs.input_1.connections[0].node]
             : null;
-        if (
-          (childNode && childNode.class === 'Number') ||
-          childNode.class === 'Variable'
-        ) {
-          const value = childNode.data.value;
-          const newValueNode = { data: { value }, inputs: {} };
-          return new AST(newValueNode, data, tabs);
+        if (childNode && childNode.class) {
+          if (
+            childNode.class === 'Number' ||
+            childNode.class === 'Variable' ||
+            childNode.class === 'String' ||
+            childNode.class === 'Boolean'
+          ) {
+            const value = childNode.data.value;
+            const newValueNode = { data: { value }, inputs: {} };
+            return new AST(newValueNode, data, tabs);
+          }
         }
       }
       return null;

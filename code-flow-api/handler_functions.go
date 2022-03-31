@@ -27,7 +27,7 @@ func getAllPrograms(w http.ResponseWriter, r *http.Request) {
 func saveProgram(w http.ResponseWriter, r *http.Request) {
 	var body Program
 	_ = json.NewDecoder(r.Body).Decode(&body)
-	p := Program { Code: body.Code }
+	p := Program { Name: body.Name, Code: body.Code, Flow: body.Flow }
 	program, err := json.Marshal(p)
 	if hasError(err, w, "Invalid request.", http.StatusBadRequest) {
 		return

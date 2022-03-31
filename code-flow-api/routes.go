@@ -12,7 +12,9 @@ import (
 const PYTHON_PROGRAM_FILE string = "program.py"
 type Program struct {
 	Uid string `json:"uid"`
+	Name string `json:"name"`
     Code string `json:"code"`
+	Flow string `json:"flow"`
 }
 
 func Route() *chi.Mux {
