@@ -36,6 +36,7 @@ import styleDrawflow from 'drawflow/dist/drawflow.min.css';
 import style from '../assets/style.css';
 import { useCodeFlowStore } from '../stores/codeFlow';
 import { onBeforeRouteLeave } from 'vue-router';
+import router from '../router';
 import {
   onMounted,
   shallowRef,
@@ -179,6 +180,7 @@ export default {
       const flow = editor.value.export().drawflow.Home.data;
       const generatedCode = parseFlowToCode(flow);
       codeFlowStore.updateCode(generatedCode);
+      router.push('/code');
     }
 
     function parseFlowToCode(data) {
