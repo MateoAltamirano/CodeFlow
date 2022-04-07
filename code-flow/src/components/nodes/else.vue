@@ -1,26 +1,14 @@
 <template>
-  <div ref="el" class="add">
-    <h4>Else</h4>
-  </div>
+  <node title="Else" color="#0099de"></node>
 </template>
 
 <script>
-import {
-  defineComponent,
-  onMounted,
-  onBeforeUpdate,
-  onUpdated,
-  getCurrentInstance,
-  readonly,
-  ref,
-  nextTick,
-} from 'vue';
-export default defineComponent({});
+import { defineComponent } from 'vue';
+import node from './node.vue';
+
+export default defineComponent({
+  components: {
+    node,
+  },
+});
 </script>
-<style scoped>
-.add {
-  border-radius: 1rem;
-  background-color: #0099de;
-  padding: 1rem;
-}
-</style>

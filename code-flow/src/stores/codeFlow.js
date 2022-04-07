@@ -8,14 +8,20 @@ export const useCodeFlowStore = defineStore({
     result: '',
   }),
   actions: {
-    updateFlow(flow) {
-      this.flow = flow;
-    },
-    updateCode(code) {
-      this.code = code;
-    },
-    updateResult(result) {
-      this.result = result;
+    updateStore(key, value) {
+      switch (key) {
+        case 'flow':
+          this.flow = value;
+          break;
+        case 'code':
+          this.code = value;
+          break;
+        case 'result':
+          this.result = value;
+          break;
+        default:
+          break;
+      }
     },
   },
 });

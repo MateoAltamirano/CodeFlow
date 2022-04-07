@@ -1,21 +1,22 @@
 <template>
-  <div ref="el" class="assign">
-    <h4>Boolean</h4>
-    <el-select
-      v-model="value"
-      placeholder="Value"
-      size="small"
-      @change="updateSelect"
-      filterable
-      allow-create
-    >
-      <el-option
-        v-for="item in options"
-        :key="item.value"
-        :label="item.label"
-        :value="item.value"
-      />
-    </el-select>
+  <div ref="boolean_ref">
+    <node title="Boolean" color="#00cd6a">
+      <el-select
+        v-model="value"
+        placeholder="Value"
+        size="small"
+        @change="updateBooleanSelect"
+        filterable
+        allow-create
+      >
+        <el-option
+          v-for="item in selectOptions"
+          :key="item.value"
+          :label="item.label"
+          :value="item.value"
+        />
+      </el-select>
+    </node>
   </div>
 </template>
 
@@ -27,14 +28,22 @@ import {
   ref,
   nextTick,
 } from 'vue';
+import node from './node.vue';
+import { updateNode } from '../../utils/common';
+
 export default defineComponent({
+  components: {
+    node,
+  },
+
   setup() {
-    const el = ref(null);
+    const boolean_ref = ref(null);
     const nodeId = ref(0);
-    let df = null;
     const value = ref(null);
     const dataNode = ref({});
-    const options = [
+    const df =
+      getCurrentInstance().appContext.config.globalProperties.$df.value;
+    const selectOptions = [
       {
         value: 'True',
         label: 'True',
@@ -45,32 +54,23 @@ export default defineComponent({
       },
     ];
 
-    df = getCurrentInstance().appContext.config.globalProperties.$df.value;
-    const updateSelect = (value) => {
-      dataNode.value.data.value = value;
-      df.updateNodeDataFromId(nodeId.value, dataNode.value.data);
+    const updateBooleanSelect = (value) => {
+      updateNode(dataNode, nodeId, df, value, 'value');
     };
 
     onMounted(async () => {
       await nextTick();
-      nodeId.value = el.value.parentElement.parentElement.id.slice(5);
+      nodeId.value = boolean_ref.value.parentElement.parentElement.id.slice(5);
       dataNode.value = df.getNodeFromId(nodeId.value);
       value.value = dataNode.value.data.value;
     });
 
     return {
-      el,
+      boolean_ref,
       value,
-      updateSelect,
-      options,
+      updateBooleanSelect,
+      selectOptions,
     };
   },
 });
 </script>
-<style scoped>
-.assign {
-  border-radius: 1rem;
-  background-color: #00cd6a;
-  padding: 1rem;
-}
-</style>

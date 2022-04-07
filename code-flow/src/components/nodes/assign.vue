@@ -1,7 +1,8 @@
 <template>
-  <div ref="el" class="assign">
-    <h4>Assign</h4>
-    <el-input v-model="variable" @change="updateSelect" size="small" />
+  <div ref="assign_ref">
+    <node title="Assign" color="#f15300">
+      <el-input v-model="variable" @change="updateAssignInput" size="small" />
+    </node>
   </div>
 </template>
 
@@ -13,40 +14,37 @@ import {
   ref,
   nextTick,
 } from 'vue';
+import node from './node.vue';
+import { updateNode } from '../../utils/common';
+
 export default defineComponent({
+  components: {
+    node,
+  },
   setup() {
-    const el = ref(null);
+    const assign_ref = ref(null);
     const nodeId = ref(0);
-    let df = null;
     const variable = ref(null);
     const dataNode = ref({});
+    const df =
+      getCurrentInstance().appContext.config.globalProperties.$df.value;
 
-    df = getCurrentInstance().appContext.config.globalProperties.$df.value;
-    const updateSelect = (value) => {
-      dataNode.value.data.variable = value;
-      df.updateNodeDataFromId(nodeId.value, dataNode.value.data);
+    const updateAssignInput = (value) => {
+      updateNode(dataNode, nodeId, df, value, 'variable');
     };
 
     onMounted(async () => {
       await nextTick();
-      nodeId.value = el.value.parentElement.parentElement.id.slice(5);
+      nodeId.value = assign_ref.value.parentElement.parentElement.id.slice(5);
       dataNode.value = df.getNodeFromId(nodeId.value);
-
       variable.value = dataNode.value.data.variable;
     });
 
     return {
-      el,
+      assign_ref,
       variable,
-      updateSelect,
+      updateAssignInput,
     };
   },
 });
 </script>
-<style scoped>
-.assign {
-  border-radius: 1rem;
-  background-color: #f15300;
-  padding: 1rem;
-}
-</style>

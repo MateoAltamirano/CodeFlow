@@ -1,12 +1,13 @@
 <template>
-  <div ref="el" class="number">
-    <h4>Number</h4>
-    <el-input-number
-      v-model.number="value"
-      @change="updateSelect"
-      controls-position="right"
-      size="small"
-    />
+  <div ref="number_ref">
+    <node title="Number" color="#00cd6a">
+      <el-input-number
+        v-model.number="value"
+        @change="updateNumberInput"
+        controls-position="right"
+        size="small"
+      />
+    </node>
   </div>
 </template>
 
@@ -14,46 +15,42 @@
 import {
   defineComponent,
   onMounted,
-  onBeforeUpdate,
   getCurrentInstance,
-  readonly,
   ref,
   nextTick,
 } from 'vue';
+import node from './node.vue';
+import { updateNode } from '../../utils/common';
+
 export default defineComponent({
+  components: {
+    node,
+  },
+
   setup() {
-    const el = ref(null);
+    const number_ref = ref(null);
     const nodeId = ref(0);
-    let df = null;
     const value = ref(null);
     const dataNode = ref({});
+    const df =
+      getCurrentInstance().appContext.config.globalProperties.$df.value;
 
-    df = getCurrentInstance().appContext.config.globalProperties.$df.value;
-    const updateSelect = (value) => {
-      dataNode.value.data.value = value;
-      df.updateNodeDataFromId(nodeId.value, dataNode.value.data);
+    const updateNumberInput = (value) => {
+      updateNode(dataNode, nodeId, df, value, 'value');
     };
 
     onMounted(async () => {
       await nextTick();
-      nodeId.value = el.value.parentElement.parentElement.id.slice(5);
+      nodeId.value = number_ref.value.parentElement.parentElement.id.slice(5);
       dataNode.value = df.getNodeFromId(nodeId.value);
-
       value.value = dataNode.value.data.value;
     });
 
     return {
-      el,
+      number_ref,
       value,
-      updateSelect,
+      updateNumberInput,
     };
   },
 });
 </script>
-<style scoped>
-.number {
-  border-radius: 1rem;
-  background-color: #00cd6a;
-  padding: 1rem;
-}
-</style>

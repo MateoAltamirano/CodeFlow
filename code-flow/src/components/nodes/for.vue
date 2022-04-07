@@ -1,19 +1,20 @@
 <template>
-  <div ref="el" class="assign">
-    <h4>For</h4>
-    <el-input v-model="variable" @change="updateSelect" size="small" />
-    <el-input-number
-      v-model.number="start"
-      @change="updateStart"
-      controls-position="right"
-      size="small"
-    />
-    <el-input-number
-      v-model.number="stop"
-      @change="updateStop"
-      controls-position="right"
-      size="small"
-    />
+  <div ref="for_ref">
+    <node title="For" color="#ae59b9">
+      <el-input v-model="variable" @change="updateForInput" size="small" />
+      <el-input-number
+        v-model.number="start"
+        @change="updateStartInput"
+        controls-position="right"
+        size="small"
+      />
+      <el-input-number
+        v-model.number="stop"
+        @change="updateStopInput"
+        controls-position="right"
+        size="small"
+      />
+    </node>
   </div>
 </template>
 
@@ -25,33 +26,39 @@ import {
   ref,
   nextTick,
 } from 'vue';
+import node from './node.vue';
+import { updateNode } from '../../utils/common';
+
 export default defineComponent({
+  components: {
+    node,
+  },
+
   setup() {
-    const el = ref(null);
+    const for_ref = ref(null);
     const nodeId = ref(0);
-    let df = null;
     const variable = ref(null);
     const start = ref(null);
     const stop = ref(null);
     const dataNode = ref({});
+    const df =
+      getCurrentInstance().appContext.config.globalProperties.$df.value;
 
-    df = getCurrentInstance().appContext.config.globalProperties.$df.value;
-    const updateSelect = (value) => {
-      dataNode.value.data.variable = value;
-      df.updateNodeDataFromId(nodeId.value, dataNode.value.data);
+    const updateForInput = (value) => {
+      updateNode(dataNode, nodeId, df, value, 'variable');
     };
-    const updateStart = (value) => {
-      dataNode.value.data.start = value;
-      df.updateNodeDataFromId(nodeId.value, dataNode.value.data);
+
+    const updateStartInput = (value) => {
+      updateNode(dataNode, nodeId, df, value, 'start');
     };
-    const updateStop = (value) => {
-      dataNode.value.data.stop = value;
-      df.updateNodeDataFromId(nodeId.value, dataNode.value.data);
+
+    const updateStopInput = (value) => {
+      updateNode(dataNode, nodeId, df, value, 'stop');
     };
 
     onMounted(async () => {
       await nextTick();
-      nodeId.value = el.value.parentElement.parentElement.id.slice(5);
+      nodeId.value = for_ref.value.parentElement.parentElement.id.slice(5);
       dataNode.value = df.getNodeFromId(nodeId.value);
 
       variable.value = dataNode.value.data.variable;
@@ -60,21 +67,14 @@ export default defineComponent({
     });
 
     return {
-      el,
+      for_ref,
       variable,
       start,
       stop,
-      updateSelect,
-      updateStart,
-      updateStop,
+      updateForInput,
+      updateStartInput,
+      updateStopInput,
     };
   },
 });
 </script>
-<style scoped>
-.assign {
-  border-radius: 1rem;
-  background-color: #ae59b9;
-  padding: 1rem;
-}
-</style>

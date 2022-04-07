@@ -176,14 +176,75 @@ export default {
     internalInstance.appContext.app._context.config.globalProperties.$df =
       editor;
 
-    function generateCode() {
+    const generateCode = () => {
       const flow = editor.value.export().drawflow.Home.data;
       const generatedCode = parseFlowToCode(flow);
-      codeFlowStore.updateCode(generatedCode);
+      codeFlowStore.updateStore('code', generatedCode);
       router.push('/code');
-    }
+    };
 
-    function parseFlowToCode(data) {
+    const isRoot = (node) => {
+      return node.outputs.output_1.connections.length === 0;
+    };
+
+    const inOrderTraversal = (ast, expression) => {
+      if (ast !== null) {
+        inOrderTraversal(ast.left, expression);
+        switch (ast.value.class) {
+          case 'Variable':
+          case 'Number':
+          case 'String':
+          case 'Boolean':
+            expression.push(`${ast.value.data.value} `);
+            break;
+          case 'Assign':
+          case 'Addition':
+          case 'Substraction':
+          case 'Multiplication':
+          case 'Division':
+            expression.push(`${ast.value.data.operator} `);
+            break;
+          case 'If':
+            expression.push(`if ${ast.left.value.data.condition}:\n`);
+            for (let i = 0; i < ast.tabs; i++) {
+              expression.push('\t');
+            }
+            break;
+          case 'Else':
+            expression.push('\n');
+            for (let i = 0; i < ast.tabs - 1; i++) {
+              expression.push('\t');
+            }
+            expression.push('else:\n');
+            for (let i = 0; i < ast.tabs; i++) {
+              expression.push('\t');
+            }
+            break;
+          case 'For':
+            expression.push(`for ${ast.left.value.data.condition}:\n`);
+            for (let i = 0; i < ast.tabs; i++) {
+              expression.push('\t');
+            }
+            break;
+          case 'Print':
+            const value = ast.left ? ast.left.value.data.value : '';
+            expression.push(`print(${value})`);
+            break;
+          case undefined:
+            if (
+              ast.value.data.condition === undefined &&
+              ast.value.data.value === undefined
+            ) {
+              expression.push(`${ast.value.data.variable} `);
+            }
+            break;
+          default:
+        }
+        inOrderTraversal(ast.right, expression);
+      }
+    };
+
+    const parseFlowToCode = (data) => {
       let rootNodes;
       rootNodes = Object.values(data).filter((node) => isRoot(node));
 
@@ -197,68 +258,7 @@ export default {
       });
 
       return expressions.join('\n');
-
-      function inOrderTraversal(ast, expression) {
-        if (ast !== null) {
-          inOrderTraversal(ast.left, expression);
-          switch (ast.value.class) {
-            case 'Variable':
-            case 'Number':
-            case 'String':
-            case 'Boolean':
-              expression.push(`${ast.value.data.value} `);
-              break;
-            case 'Assign':
-            case 'Addition':
-            case 'Substraction':
-            case 'Multiplication':
-            case 'Division':
-              expression.push(`${ast.value.data.operator} `);
-              break;
-            case 'If':
-              expression.push(`if ${ast.left.value.data.condition}:\n`);
-              for (let i = 0; i < ast.tabs; i++) {
-                expression.push('\t');
-              }
-              break;
-            case 'Else':
-              expression.push('\n');
-              for (let i = 0; i < ast.tabs - 1; i++) {
-                expression.push('\t');
-              }
-              expression.push('else:\n');
-              for (let i = 0; i < ast.tabs; i++) {
-                expression.push('\t');
-              }
-              break;
-            case 'For':
-              expression.push(`for ${ast.left.value.data.condition}:\n`);
-              for (let i = 0; i < ast.tabs; i++) {
-                expression.push('\t');
-              }
-              break;
-            case 'Print':
-              const value = ast.left ? ast.left.value.data.value : '';
-              expression.push(`print(${value})`);
-              break;
-            case undefined:
-              if (
-                ast.value.data.condition === undefined &&
-                ast.value.data.value === undefined
-              ) {
-                expression.push(`${ast.value.data.variable} `);
-              }
-              break;
-            default:
-          }
-          inOrderTraversal(ast.right, expression);
-        }
-      }
-
-      function isRoot(node) {
-        return node.outputs.output_1.connections.length === 0;
-      }
-    }
+    };
 
     const drag = (ev) => {
       if (ev.type === 'touchstart') {
@@ -269,6 +269,7 @@ export default {
         ev.dataTransfer.setData('node', ev.target.getAttribute('data-node'));
       }
     };
+
     const drop = (ev) => {
       if (ev.type === 'touchend') {
         var parentdrawflow = document
@@ -291,15 +292,19 @@ export default {
         addNodeToDrawFlow(data, ev.clientX, ev.clientY);
       }
     };
+
     const allowDrop = (ev) => {
       ev.preventDefault();
     };
+
     let mobile_item_selec = '';
     let mobile_last_move = null;
-    function positionMobile(ev) {
+
+    const positionMobile = (ev) => {
       mobile_last_move = ev;
-    }
-    function addNodeToDrawFlow(name, pos_x, pos_y) {
+    };
+
+    const addNodeToDrawFlow = (name, pos_x, pos_y) => {
       pos_x =
         pos_x *
           (editor.value.precanvas.clientWidth /
@@ -326,7 +331,8 @@ export default {
         name,
         'vue'
       );
-    }
+    };
+
     onMounted(() => {
       var elements = document.getElementsByClassName('drag-drawflow');
       for (var i = 0; i < elements.length; i++) {
@@ -367,7 +373,10 @@ export default {
     });
 
     onBeforeRouteLeave(() => {
-      codeFlowStore.updateFlow(editor.value.export().drawflow.Home.data);
+      codeFlowStore.updateStore(
+        'flow',
+        editor.value.export().drawflow.Home.data
+      );
     });
 
     return {

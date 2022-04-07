@@ -1,21 +1,22 @@
 <template>
-  <div ref="el" class="assign">
-    <h4>Variable</h4>
-    <el-select
-      v-model="value"
-      placeholder="Value"
-      size="small"
-      @change="updateSelect"
-      filterable
-      allow-create
-    >
-      <el-option
-        v-for="item in options"
-        :key="item.value"
-        :label="item.label"
-        :value="item.value"
-      />
-    </el-select>
+  <div ref="variable_ref">
+    <node title="Variable" color="#00a186">
+      <el-select
+        v-model="value"
+        placeholder="Value"
+        size="small"
+        @change="updateVariableSelect"
+        filterable
+        allow-create
+      >
+        <el-option
+          v-for="item in variableOptions"
+          :key="item.value"
+          :label="item.label"
+          :value="item.value"
+        />
+      </el-select>
+    </node>
   </div>
 </template>
 
@@ -27,24 +28,30 @@ import {
   ref,
   nextTick,
 } from 'vue';
+import node from './node.vue';
+import { updateNode } from '../../utils/common';
+
 export default defineComponent({
+  components: {
+    node,
+  },
+
   setup() {
-    const el = ref(null);
+    const variable_ref = ref(null);
     const nodeId = ref(0);
-    let df = null;
     const value = ref(null);
     const dataNode = ref({});
-    const options = [];
+    const df =
+      getCurrentInstance().appContext.config.globalProperties.$df.value;
+    const variableOptions = [];
 
-    df = getCurrentInstance().appContext.config.globalProperties.$df.value;
-    const updateSelect = (value) => {
-      dataNode.value.data.value = value;
-      df.updateNodeDataFromId(nodeId.value, dataNode.value.data);
+    const updateVariableSelect = (value) => {
+      updateNode(dataNode, nodeId, df, value, 'value');
     };
 
     onMounted(async () => {
       await nextTick();
-      nodeId.value = el.value.parentElement.parentElement.id.slice(5);
+      nodeId.value = variable_ref.value.parentElement.parentElement.id.slice(5);
       dataNode.value = df.getNodeFromId(nodeId.value);
       getRootAssignNodes();
       value.value = dataNode.value.data.value;
@@ -58,7 +65,7 @@ export default defineComponent({
           node.data.variable &&
           node.outputs.output_1.connections.length === 0
         ) {
-          options.push({
+          variableOptions.push({
             value: node.data.variable,
             label: node.data.variable,
           });
@@ -67,18 +74,11 @@ export default defineComponent({
     };
 
     return {
-      el,
+      variable_ref,
       value,
-      updateSelect,
-      options,
+      updateVariableSelect,
+      variableOptions,
     };
   },
 });
 </script>
-<style scoped>
-.assign {
-  border-radius: 1rem;
-  background-color: #00a186;
-  padding: 1rem;
-}
-</style>

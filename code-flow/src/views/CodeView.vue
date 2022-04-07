@@ -38,8 +38,15 @@
       </el-select>
       <template #footer>
         <span class="dialog-footer">
-          <el-button @click="importDialogVisible = false">Cancel</el-button>
-          <el-button type="primary" @click="importProgram">Import</el-button>
+          <el-button
+            color="#ff4b3a"
+            style="height: 3rem; margin-right: 1rem"
+            @click="importDialogVisible = false"
+            >Cancel</el-button
+          >
+          <el-button color="#0099de" style="height: 3rem" @click="importProgram"
+            >Import</el-button
+          >
         </span>
       </template>
     </el-dialog>
@@ -47,8 +54,15 @@
       <el-input v-model="programName" />
       <template #footer>
         <span class="dialog-footer">
-          <el-button @click="saveDialogVisible = false">Cancel</el-button>
-          <el-button type="primary" @click="saveProgram">Save</el-button>
+          <el-button
+            color="#ff4b3a"
+            style="height: 3rem; margin-right: 1rem"
+            @click="saveDialogVisible = false"
+            >Cancel</el-button
+          >
+          <el-button color="#0099de" style="height: 3rem" @click="saveProgram"
+            >Save</el-button
+          >
         </span>
       </template>
     </el-dialog>
@@ -75,7 +89,7 @@ export default {
           Code: codeFlowStore.code,
         })
         .then((response) => {
-          codeFlowStore.updateResult(response.data);
+          codeFlowStore.updateStore('result', response.data);
         })
         .catch((error) => {
           console.log(error);
@@ -129,8 +143,8 @@ export default {
         .get(`http://localhost:9000/programs/${programId.value}`)
         .then((response) => {
           const { program } = response.data;
-          codeFlowStore.updateCode(program[0].code);
-          codeFlowStore.updateFlow(JSON.parse(program[0].flow));
+          codeFlowStore.updateStore('code', program[0].code);
+          codeFlowStore.updateStore('flow', JSON.parse(program[0].flow));
         })
         .catch((error) => {
           console.log(error);

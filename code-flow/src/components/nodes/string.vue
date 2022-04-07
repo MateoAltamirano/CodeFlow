@@ -1,7 +1,8 @@
 <template>
-  <div ref="el" class="assign">
-    <h4>String</h4>
-    <el-input v-model="value" @change="updateSelect" size="small" />
+  <div ref="string_ref">
+    <node title="String" color="#00cd6a">
+      <el-input v-model="value" @change="updateStringInput" size="small" />
+    </node>
   </div>
 </template>
 
@@ -13,40 +14,39 @@ import {
   ref,
   nextTick,
 } from 'vue';
+import node from './node.vue';
+import { updateNode } from '../../utils/common';
+
 export default defineComponent({
+  components: {
+    node,
+  },
+
   setup() {
-    const el = ref(null);
+    const string_ref = ref(null);
     const nodeId = ref(0);
     let df = null;
     const value = ref(null);
     const dataNode = ref({});
 
     df = getCurrentInstance().appContext.config.globalProperties.$df.value;
-    const updateSelect = (value) => {
-      dataNode.value.data.value = `"${value}"`;
-      df.updateNodeDataFromId(nodeId.value, dataNode.value.data);
+    const updateStringInput = (value) => {
+      updateNode(dataNode, nodeId, df, `"${value}"`, 'value');
     };
 
     onMounted(async () => {
       await nextTick();
-      nodeId.value = el.value.parentElement.parentElement.id.slice(5);
+      nodeId.value = string_ref.value.parentElement.parentElement.id.slice(5);
       dataNode.value = df.getNodeFromId(nodeId.value);
       const valueWithoutQuotes = dataNode.value.data.value.replaceAll('"', '');
       value.value = valueWithoutQuotes;
     });
 
     return {
-      el,
+      string_ref,
       value,
-      updateSelect,
+      updateStringInput,
     };
   },
 });
 </script>
-<style scoped>
-.assign {
-  border-radius: 1rem;
-  background-color: #00cd6a;
-  padding: 1rem;
-}
-</style>

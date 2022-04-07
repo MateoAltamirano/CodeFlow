@@ -1,7 +1,7 @@
 export default class AST {
   constructor(node, data, tabs) {
-    this.value = node;
     if (node.class === 'If' || node.class === 'For') tabs += 1;
+    this.value = node;
     this.left = this.getInputNode(node, data, 'input_1', tabs);
     this.right = this.getInputNode(node, data, 'input_2', tabs);
     this.tabs = tabs;
